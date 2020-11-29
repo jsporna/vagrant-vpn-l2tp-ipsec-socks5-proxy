@@ -1,0 +1,5 @@
+- name: vpn
+  hosts: all
+  become: true
+  roles:
+  - vpn
