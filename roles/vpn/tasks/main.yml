@@ -10,3 +10,77 @@
   - network-manager-strongswan
   - dante-server
   - net-tools
+
+- name: set up NetworkManager to manage network interfaces
+  lineinfile:
+    path: /etc/NetworkManager/NetworkManager.conf
+    regexp: '^managed='
+    line: managed=true
+  notify:
+  - network-manager
+
+- name: set up NetworkManager to manager devices
+  lineinfile:
+    path: /usr/lib/NetworkManager/conf.d/10-globally-managed-devices.conf
+    regexp: '^unmanaged-devices='
+    line: unmanaged-devices=*,except:type:vpn,except:type:ethernet
+  notify:
+  - network-manager
+
+- name: add dante-server dispatcher for NetworkManager
+  copy:
+    src: danted-dispatcher
+    dest: /etc/NetworkManager/dispatcher.d/danted-dispatcher
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: check if vpn connection exist
+  shell: nmcli c | tail -n +2 | awk '{ print $1}' | grep vpn | cat
+  register: vpn_connection
+
+- name: delete existing vpn connection 
+  shell: nmcli c del vpn
+  when: vpn_connection.stdout | length > 0
+
+- name: set up vpn configuration
+  shell: nmcli c add con-name vpn type vpn vpn-type l2tp vpn.data "gateway={{ vpn_gateway }}, ipsec-enabled=yes, ipsec-psk={{ vpn_ipsec_psk }}, password-flags=0, user={{ vpn_user }}, mru={{ vpn_mru }}, mru={{ vpn_mtu }}, refuse-pap={{ vpn_refuse_pap }}, refuse-chap={{ vpn_refuse_chap }}, refuse-mschap={{ vpn_refuse_mschap }}, refuse-mschap-v2={{ vpn_refuse_mschap_v2 }}, require-mppe={{ vpn_require_mppe }}" vpn.secrets password={{ vpn_password }}
+  when: 
+  - vpn_gateway != ""
+  - vpn_ipsec_psk != ""
+  - vpn_user != ""
+  - vpn_password != ""
+
+- name: copy dante-server configuration
+  copy:
+    src: danted.conf
+    dest: /etc/danted.conf
+    owner: root
+    group: root
+    mode: '0644'
+    backup: yes
+
+- name: set up dante-servewr systemd service for logging
+  lineinfile:
+    path: /lib/systemd/system/danted.service
+    insertafter: "^ReadOnlyDirectories="
+    line: "ReadWriteDirectorires=/var/log"
+
+- name: create empty log file for dante-server
+  file:
+    path: /var/log/sockd.log
+    owner: root
+    group: root
+    mode: '0644'
+    state: touch
+
+- name: copy vpn control scripts
+  copy:
+    src: "{{ item }}"
+    dest: "/usr/local/bin/{{ item }}"
+    owner: vagrant
+    group: vagrant
+    mode: '0755'
+  loop:
+  - vpn-up
+  - vpn-down
