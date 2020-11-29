@@ -1,0 +1,4 @@
+vpn_ipsec_psk: ""
+vpn_gateway: ""
+vpn_user: ""
+vpn_password: ""
