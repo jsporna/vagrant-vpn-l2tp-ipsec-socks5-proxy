@@ -1,15 +1,14 @@
 ---
 - name: install packages
   apt:
-    name: "{{item}}"
+    name:
+    - network-manager
+    - network-manager-l2tp
+    - network-manager-strongswan
+    - dante-server
+    - net-tools
     state: present
     update_cache: yes
-  loop:
-  - network-manager
-  - network-manager-l2tp
-  - network-manager-strongswan
-  - dante-server
-  - net-tools
 
 - name: set up NetworkManager to manage network interfaces
   lineinfile:
