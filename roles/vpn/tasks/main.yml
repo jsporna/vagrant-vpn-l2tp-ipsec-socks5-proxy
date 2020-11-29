@@ -1,0 +1,12 @@
+---
+- name: install packages
+  apt:
+    name: "{{item}}"
+    state: present
+    update_cache: yes
+  loop:
+  - network-manager
+  - network-manager-l2tp
+  - network-manager-strongswan
+  - dante-server
+  - net-tools
