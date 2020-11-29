@@ -1,0 +1,3 @@
+#! /bin/bash
+
+sudo nmcli c down vpn
