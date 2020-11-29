@@ -1,0 +1,10 @@
+---
+- name: network-manager
+  service:
+    name: NetworkManager 
+    state: restarted
+
+- name: danted
+  service:
+    name: danted
+    state: restarted
