@@ -28,10 +28,10 @@ Vagrant.configure("2") do |config|
     config.vm.provision "ansible" do |ansible|
         ansible.playbook = "playbook.yml"
         ansible.extra_vars = {
-        vpn_gateway: VPN_GATEWAY,
-        vpn_ipsec_psk: VPN_IPSEC_PSK,
-        vpn_user: VPN_USER,
-        vpn_password: VPN_PASSWORD
+            vpn_gateway: VPN_GATEWAY,
+            vpn_ipsec_psk: VPN_IPSEC_PSK,
+            vpn_user: VPN_USER,
+            vpn_password: VPN_PASSWORD
         }
     end
 end
