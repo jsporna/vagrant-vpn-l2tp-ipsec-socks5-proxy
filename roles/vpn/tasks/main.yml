@@ -34,6 +34,16 @@
     group: root
     mode: '0755'
 
+- meta: flush_handlers
+
+- name: check if eth0 connection exists
+  shell: nmcli c | tail -n +2 | awk '{print $1}' | grep eth0 | cat
+  register: eth0_connection
+
+- name: shutdown existing eth0 connection
+  shell: nmcli c down eth0
+  when: eth0_connection.stdout | length > 0
+
 - name: check if vpn connection exist
   shell: nmcli c | tail -n +2 | awk '{ print $1}' | grep vpn | cat
   register: vpn_connection
@@ -43,8 +53,8 @@
   when: vpn_connection.stdout | length > 0
 
 - name: set up vpn configuration
-  shell: nmcli c add con-name vpn type vpn vpn-type l2tp vpn.data "gateway={{ vpn_gateway }}, ipsec-enabled=yes, ipsec-psk={{ vpn_ipsec_psk }}, password-flags=0, user={{ vpn_user }}, mru={{ vpn_mru }}, mru={{ vpn_mtu }}, refuse-pap={{ vpn_refuse_pap }}, refuse-chap={{ vpn_refuse_chap }}, refuse-mschap={{ vpn_refuse_mschap }}, refuse-mschap-v2={{ vpn_refuse_mschap_v2 }}, require-mppe={{ vpn_require_mppe }}" vpn.secrets password={{ vpn_password }}
-  when: 
+  shell: nmcli c add con-name vpn type vpn vpn-type l2tp vpn.data "gateway={{ vpn_gateway }}, ipsec-enabled=yes, ipsec-psk={{ vpn_ipsec_psk }}, password-flags=0, user={{ vpn_user }}" vpn.secrets password={{ vpn_password }}
+  when:
   - vpn_gateway != ""
   - vpn_ipsec_psk != ""
   - vpn_user != ""
@@ -62,8 +72,12 @@
 - name: set up dante-servewr systemd service for logging
   lineinfile:
     path: /lib/systemd/system/danted.service
-    insertafter: "^ReadOnlyDirectories="
-    line: "ReadWriteDirectorires=/var/log"
+    insertbefore: "^InaccessibleDirectories="
+    line: "ReadWritePaths=/var/log"
+
+- name: reload systemd daemon
+  systemd:
+    daemon_reload: yes
 
 - name: create empty log file for dante-server
   file:
