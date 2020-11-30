@@ -10,6 +10,26 @@ The Vagrant project will provision VM with configured VPN L2TP+IPsec connection 
 
 VPN Connection is up and SOCKS proxy listen on `localhost:1080`
 
+## Usage
+
+1. curl
+
+    `curl -x socks5://localhost:1080 ifconfig.co`
+
+2. firefox
+
+    1. create new profile using **browser**: in new tab enter `about:profiles` or create new profile using **Profile Manager**: run `firefox --ProfileManger`
+    
+    2. in new profile setup proxy: in new tab enter `about:preferences` and go to **Network Settings**
+    
+    3. check **Manual proxy configuration** and fill up **SOCKS Host** with `localhost` and **Port** with `1080`
+    
+    4. check **Proxy DNS when using SOCKS v5**
+
+4. google-chrome
+
+   `google-chrome --proxy-server='socks://127.0.0.1:1080 &`
+
 ## Configuration
 
 The Vagrant projecxt can be uses _as-is_; there are a couple of parameters you have to set up installation.
