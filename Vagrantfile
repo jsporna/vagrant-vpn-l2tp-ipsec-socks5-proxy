@@ -14,7 +14,7 @@ Vagrant.configure("2") do |config|
 end
 
 def default_s(key, default)
-ENV[key] && ENV[key].empty? ? ENV[key] : default
+ENV[key] && ! ENV[key].empty? ? ENV[key] : default
 end
 
 def default_i(key, default)
